@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;600;700;800;900&display=swap');
+@import 'tailwindcss';
+@import './tokens.css';
+@import './components.css';
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+}

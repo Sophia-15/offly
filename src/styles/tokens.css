@@ -1,0 +1,111 @@
+/* Design tokens ported from the Offly reference design (claude.ai/design). */
+:root, [data-theme='light'] {
+  --surface: #f6f8fc;
+  --surface-raised: #ffffff;
+  --line: #e6eaf2;
+  --edge: #dfe4ee;
+  --ink: #14213d;
+  --ink-muted: #5b6680;
+
+  --blue: #0060f0;
+  --blue-deep: #0045c4;
+  --blue-soft: #e8f0ff;
+  --on-blue: #ffffff;
+
+  --sky: #cfe8ff;
+  --sky-far: #a9d6ff;
+  --grass: #8fdc7a;
+  --grass-deep: #5cc46a;
+  --cloud: #ffffff;
+
+  --sun: #ffd23f;
+  --sun-deep: #e3a700;
+  --sun-soft: #fff6d1;
+
+  --tangerine: #ff7a1a;
+  --tangerine-soft: #ffeadb;
+
+  --mint: #35d07f;
+  --mint-deep: #1fae62;
+  --mint-soft: #e1f8ec;
+
+  --blush: #ff9db5;
+  --on-accent: #14213d;
+  --danger: #d92d3a;
+
+  --shadow-edge: 0 4px 0 #dfe4ee;
+  --shadow-float: 0 12px 32px rgba(20, 33, 61, 0.1);
+}
+
+[data-theme='dark'] {
+  --surface: #0b1433;
+  --surface-raised: #152150;
+  --line: #24326a;
+  --edge: #08102b;
+  --ink: #f4f7ff;
+  --ink-muted: #aab4d4;
+
+  --blue-soft: #1a2d6e;
+
+  --sky: #1b2a66;
+  --sky-far: #2a3c86;
+  --grass: #2c6f47;
+  --grass-deep: #1f5a37;
+  --cloud: #3a4c94;
+
+  --sun-soft: #3d3510;
+  --tangerine-soft: #4a2510;
+  --mint-soft: #0f3d2a;
+  --danger: #ff6b75;
+
+  --shadow-edge: 0 4px 0 #08102b;
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface: #0b1433;
+    --surface-raised: #152150;
+    --line: #24326a;
+    --edge: #08102b;
+    --ink: #f4f7ff;
+    --ink-muted: #aab4d4;
+
+    --blue-soft: #1a2d6e;
+
+    --sky: #1b2a66;
+    --sky-far: #2a3c86;
+    --grass: #2c6f47;
+    --grass-deep: #1f5a37;
+    --cloud: #3a4c94;
+
+    --sun-soft: #3d3510;
+    --tangerine-soft: #4a2510;
+    --mint-soft: #0f3d2a;
+    --danger: #ff6b75;
+
+    --shadow-edge: 0 4px 0 #08102b;
+    --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 32px;
+  --radius-pill: 999px;
+
+  --stroke-1: 1.5px;
+
+  --font-display: 'Fredoka', 'Nunito', ui-rounded, system-ui, sans-serif;
+  --font-sans: 'Nunito', ui-rounded, system-ui, -apple-system, sans-serif;
+}
