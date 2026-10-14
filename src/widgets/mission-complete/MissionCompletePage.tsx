@@ -30,16 +30,17 @@ export function MissionCompletePage({ taskName, points, newBalance, streakCurren
     >
       <main style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 24px 56px', boxSizing: 'border-box' }}>
         <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', position: 'relative' }}>
-          <Scene height={320} wide />
-          <div style={{ position: 'absolute', left: 0, right: 0, top: 28, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
-            <Bubble>{t('complete.bubble', { task: taskName })}</Bubble>
-          </div>
-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 44, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ position: 'relative' }}>
-              <Celebration loop spread={1.3} />
-              <Mascot mood="proud" size={150} />
+          <Scene height={320} wide>
+            <div style={{ position: 'absolute', left: 0, right: 0, top: 28, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
+              <Bubble>{t('complete.bubble', { task: taskName })}</Bubble>
             </div>
-          </div>
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 44, display: 'flex', justifyContent: 'center' }}>
+              <div style={{ position: 'relative' }}>
+                <Celebration loop spread={1.3} />
+                <Mascot mood="proud" size={150} />
+              </div>
+            </div>
+          </Scene>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginTop: 28 }}>
           <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 40, lineHeight: 1.1 }}>

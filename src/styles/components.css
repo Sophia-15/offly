@@ -1,6 +1,6 @@
 /* Component primitives ported from the Offly reference design. Buttons and
    cards use a flat offset "edge" shadow that collapses on press, instead of
-   a blurred shadow — that's what gives the UI its tactile, game-like feel. */
+   a blurred shadow , that's what gives the UI its tactile, game-like feel. */
 
 body {
   margin: 0;
@@ -94,6 +94,28 @@ body {
 .card-done .card-title { color: var(--ink-muted); }
 .card-open { background: var(--mint-soft); border-color: transparent; }
 
+/* SwipeRow: swipe a row left (or focus it and press ArrowLeft) to reveal Hide and Delete */
+.swipe { position: relative; border-radius: var(--radius-md); overflow: hidden; }
+.swipe-actions { position: absolute; inset: 0; display: flex; justify-content: flex-end; }
+.swipe-btn {
+  width: 84px;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: var(--font-sans);
+  color: #ffffff;
+}
+.swipe-hide { background: var(--ink-muted); }
+.swipe-delete { background: var(--danger); }
+.swipe-front { position: relative; outline: none; touch-action: pan-y; user-select: none; }
+.swipe-front:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
 .bar { height: 8px; border-radius: var(--radius-pill); background: var(--line); overflow: hidden; }
 .bar > span { display: block; height: 100%; background: var(--mint); border-radius: var(--radius-pill); }
 
@@ -134,8 +156,10 @@ body {
   border-radius: 4px;
   transform: translateX(-50%) rotate(45deg);
 }
+.bubble-left::after { left: 36px; transform: rotate(45deg); }
 
 .timer-ring { display: block; overflow: visible; }
+.timer-face { fill: var(--surface-raised); }
 .timer-track { fill: none; stroke: var(--line); }
 .timer-progress { fill: none; stroke: var(--mint); stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
 .timer-time { font-family: var(--font-display); font-weight: 600; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -157,6 +181,25 @@ body {
 .icon-btn { width: 54px; height: 54px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface-raised); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow-edge); }
 .icon-btn:active { transform: translateY(4px); box-shadow: none; }
 .icon-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+/* The mobile Focus screen's controls live in a rounded sheet that rises up
+   over the scene, instead of overlaid on it like the wide layout. */
+.focus-sheet {
+  margin-top: -56px;
+  position: relative;
+  z-index: 2;
+  background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 18px 16px 4px;
+  box-sizing: border-box;
+}
+
+/* Desktop-only parts of the Focus stage. The display here (not inline) is
+   what lets .hide-mobile's media-query rule actually win , an inline
+   `display` on the element would always beat it, which bit us before. */
+.focus-overlay-controls { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; }
+.focus-overlay-companion { position: absolute; right: 7%; bottom: 32px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.focus-desktop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 20px; align-items: start; }
 
 .nav-link {
   display: inline-flex;
@@ -185,8 +228,24 @@ body {
    A floating pill inset from the edges, matching the reference's mobile nav exactly. */
 .bottom-nav { display: none; }
 
+.nav-bar-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; }
+
+/* The reference's mobile screens never show this bar at all , each page owns
+   its own compact header (title/logo + balance) instead, so this always
+   steps aside on phones and `.mobile-header` rows take its place. */
+.mobile-header { display: none; }
+
+/* Generic pair for any element whose composition (not just position) genuinely
+   differs between phone and wide layouts , see FocusPage for the reasoning. */
+.show-mobile-flex { display: none; }
+
 @media (max-width: 680px) {
   .top-nav-links { display: none; }
+  .nav-bar-row { display: none; }
+  .mobile-header { display: flex; }
+  .desktop-only-title { display: none; }
+  .hide-mobile { display: none; }
+  .show-mobile-flex { display: flex; }
   .bottom-nav {
     display: flex;
     position: fixed;
@@ -245,16 +304,19 @@ body {
 .pick:active { transform: translateY(3px); box-shadow: none !important; }
 .pick-active { background: var(--blue-soft); border-color: var(--blue); box-shadow: 0 4px 0 var(--blue); }
 
-/* Scene: illustrated day/night backdrop */
-.scene { position: relative; overflow: hidden; background: var(--sky); }
+/* Scene: illustrated backdrop, five times of day (dawn/morning/afternoon/dusk/night) */
+.scene { position: relative; overflow: hidden; background: var(--sky); transition: background-color 0.6s ease; }
 .scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.scene .s-sun { fill: var(--sun); }
-.scene .s-halo { fill: var(--sun); opacity: 0.25; }
+.scene .s-sun { fill: var(--scene-sun, var(--sun)); }
+.scene .s-halo { fill: var(--scene-sun, var(--sun)); opacity: 0.25; }
+.scene .s-glow { fill: var(--scene-glow, #ffffff); opacity: 0.4; }
 .scene .s-cloud { fill: var(--cloud); }
 .scene .s-far { fill: var(--sky-far); }
 .scene .s-grass { fill: var(--grass); }
 .scene .s-deep { fill: var(--grass-deep); }
 .scene .s-star { fill: #ffffff; opacity: 0.8; }
+.scene .s-star-faint { opacity: 0.45; }
+.scene-dawn .s-halo, .scene-dusk .s-halo { opacity: 0.35; }
 .scene-body { position: relative; height: 100%; }
 [data-theme='dark'] .scene .s-halo { opacity: 0.12; }
 
@@ -394,3 +456,104 @@ body {
 .coin .c-body { fill: var(--sun); stroke: var(--sun-deep); }
 .coin .c-ring { fill: none; stroke: var(--sun-deep); opacity: 0.55; }
 .coin .c-shine { fill: #ffffff; opacity: 0.85; }
+
+/* ---------- Mascot: alarm mood (times-up) ---------- */
+.mascot-mood-alarm .m-mood { animation: mascot-alarm-shake .45s ease-in-out infinite; }
+.mascot .m-wave { fill: none; stroke: var(--tangerine); stroke-linecap: round; opacity: 0; }
+.mascot .m-wave1 { animation: mascot-wave 1s ease-out infinite; }
+.mascot .m-wave2 { animation: mascot-wave 1s ease-out .25s infinite; }
+@keyframes mascot-alarm-shake { 0%, 100% { transform: rotate(0deg); } 20% { transform: rotate(-7deg); } 40% { transform: rotate(6deg); } 60% { transform: rotate(-5deg); } 80% { transform: rotate(4deg); } }
+@keyframes mascot-wave { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---------- Times-up alarm: escalates in three stages until the person stops.
+   1 a nudge card, 2 a bigger card over a dimmed screen, 3 a full takeover that drains coins. ---------- */
+.alarm { box-sizing: border-box; background: var(--surface-raised); color: var(--ink); border-radius: var(--radius-lg); box-shadow: var(--shadow-float); }
+.alarm-1 { padding: 14px 16px; border: 2px solid var(--tangerine); animation: alarm-drop .5s cubic-bezier(.2,1.4,.4,1) both, alarm-nudge 2.4s ease-in-out 1s infinite; }
+.alarm-sub { margin: 4px 0 0; font-size: 14px; line-height: 20px; font-weight: 700; color: var(--ink-muted); }
+.alarm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.alarm-2 { padding: 26px 22px 22px; text-align: center; border: 2px solid var(--tangerine); animation: alarm-rise .45s cubic-bezier(.2,1.2,.4,1) both; }
+.alarm-3 { padding: 30px 24px 24px; text-align: center; background: transparent; box-shadow: none; }
+.alarm-hero { position: relative; display: flex; justify-content: center; align-items: center; margin: 4px auto 10px; }
+.alarm-hero .mascot { position: relative; z-index: 1; }
+.alarm-ring { position: absolute; left: 50%; top: 50%; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 999px; border: 4px solid var(--tangerine); opacity: 0; animation: alarm-ring 1.6s ease-out infinite; }
+.alarm-ring-2 { animation-delay: .5s; }
+.alarm-ring-3 { animation-delay: 1s; }
+.alarm-title { margin: 6px 0 0; font-family: var(--font-display); font-weight: 600; font-size: 26px; line-height: 32px; }
+.alarm-title-lg { font-size: 36px; line-height: 42px; }
+.alarm-drain { display: inline-flex; align-items: center; gap: 6px; margin: 12px 0 0; padding: 6px 14px; border-radius: 999px; background: #ffe3e5; color: #b4232f; font-size: 14px; font-weight: 800; animation: alarm-blink 1.2s ease-in-out infinite; }
+[data-theme='dark'] .alarm-drain { background: #4a1820; color: #ff9aa2; }
+.alarm-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+/* full-screen takeover background for stage 3, set on the screen's own overlay */
+.alarm-takeover { background: var(--tangerine-soft); animation: alarm-takeover 1.4s ease-in-out infinite; }
+[data-theme='dark'] .alarm-takeover { background: #4a2510; }
+.alarm-dim { background: rgba(10, 16, 40, .55); animation: alarm-fade .3s ease-out both; }
+@keyframes alarm-drop { 0% { transform: translateY(-120%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+@keyframes alarm-rise { 0% { transform: translateY(40px) scale(.96); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes alarm-nudge { 0%, 70%, 100% { transform: translateX(0); } 75% { transform: translateX(-6px); } 80% { transform: translateX(6px); } 85% { transform: translateX(-4px); } 90% { transform: translateX(4px); } }
+@keyframes alarm-ring { 0% { opacity: .8; transform: scale(.7); } 100% { opacity: 0; transform: scale(2.2); } }
+@keyframes alarm-blink { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes alarm-takeover { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.06) saturate(1.15); } }
+@keyframes alarm-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .alarm, .alarm *, .alarm-takeover { animation: none !important; } .alarm-ring { display: none; } }
+
+/* Global placement — the alarm floats over the whole app (any page), fixed to
+   the viewport. Position/size differ by breakpoint, so (per the inline-style
+   vs. media-query lesson above) every bit of that lives in these classes,
+   never inline. */
+.alarm-watch-pill {
+  position: fixed;
+  left: 50%;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 42;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px 0 6px;
+  border-radius: 999px;
+  background: #14213d;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: var(--shadow-float);
+}
+.alarm-stage1-wrap {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  top: calc(54px + env(safe-area-inset-top, 0px));
+  z-index: 45;
+}
+.alarm-stage2-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 46;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 14px calc(28px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+.alarm-stage2-inner { width: 100%; }
+.alarm-stage3-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 47;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.alarm-stage3-inner { width: 100%; }
+
+@media (min-width: 681px) {
+  .alarm-watch-pill { left: auto; right: 24px; bottom: 24px; top: auto; transform: none; height: 44px; padding: 0 18px 0 8px; font-size: 15px; }
+  .alarm-stage1-wrap { left: auto; right: 24px; top: 24px; width: 380px; max-width: calc(100% - 48px); }
+  .alarm-stage2-wrap { align-items: center; padding: 24px; }
+  .alarm-stage2-inner { width: 440px; max-width: 100%; }
+  .alarm-stage3-wrap { padding: 24px; }
+  .alarm-stage3-inner { width: 480px; max-width: 100%; }
+}

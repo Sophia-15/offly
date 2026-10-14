@@ -78,6 +78,10 @@ const ICONS: Record<string, IconPart[]> = {
     ['path', { d: 'M4.5 12a7.5 7.5 0 1 0 2.2-5.3' }],
     ['path', { d: 'M4 4.5v3.8h3.8' }],
   ],
+  bell: [
+    ['path', { d: 'M6 10.5a6 6 0 0 1 12 0c0 3.5 1 5 2 6H4c1-1 2-2.5 2-6z' }],
+    ['path', { d: 'M9.5 19.5a2.5 2.5 0 0 0 5 0' }],
+  ],
 }
 
 interface IconProps {

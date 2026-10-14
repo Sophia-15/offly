@@ -14,6 +14,9 @@ function defaultState(): AppState {
     displayName: '',
     theme: 'system',
     language: 'en',
+    hiddenTaskIds: [],
+    alarmStyle: 'relentless',
+    notifyEnabled: false,
   }
 }
 

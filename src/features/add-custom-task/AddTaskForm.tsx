@@ -5,15 +5,14 @@ import { EmojiPicker } from '../../shared/ui/EmojiPicker'
 
 interface AddTaskFormProps {
   onAdd: (name: string, points: number, emoji: string) => void
+  nameInputRef?: React.Ref<HTMLInputElement>
 }
 
-const EMOJI_CHOICES = ['⭐', '🌱', '🎯', '🧩', '🍀', '🎨', '🧠', '🌻']
-
-export function AddTaskForm({ onAdd }: AddTaskFormProps) {
+export function AddTaskForm({ onAdd, nameInputRef }: AddTaskFormProps) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [points, setPoints] = useState(10)
-  const [emoji, setEmoji] = useState(EMOJI_CHOICES[0])
+  const [emoji, setEmoji] = useState('⭐')
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -26,10 +25,11 @@ export function AddTaskForm({ onAdd }: AddTaskFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="card" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', gap: 12 }}>
-      <EmojiPicker choices={EMOJI_CHOICES} value={emoji} onChange={setEmoji} ariaLabel={t('missions.choose_emoji')} />
+      <EmojiPicker value={emoji} onChange={setEmoji} ariaLabel={t('missions.choose_emoji')} placeholder={t('missions.emoji_input_placeholder')} />
       <label style={{ flex: 1, minWidth: 160, fontSize: 12, fontWeight: 700, color: 'var(--ink-muted)' }}>
         {t('missions.new_mission_label')}
         <input
+          ref={nameInputRef}
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}

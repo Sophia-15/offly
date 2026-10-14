@@ -21,6 +21,7 @@ export function Timer({ secondsLeft, totalSeconds, size = 180, label, tone }: Ti
       style={{ position: 'relative', display: 'inline-grid', placeItems: 'center', width: size, height: size }}
     >
       <svg width={size} height={size} className="timer-ring" style={{ transform: 'rotate(-90deg)' }}>
+        <circle className="timer-face" cx={size / 2} cy={size / 2} r={size / 2} />
         <circle className="timer-track" cx={size / 2} cy={size / 2} r={radius} strokeWidth={stroke} />
         <circle
           className="timer-progress"

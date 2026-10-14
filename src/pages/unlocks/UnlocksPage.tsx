@@ -5,6 +5,7 @@ import { costFor, type Site } from '../../entities/site/model'
 import { AddSiteForm } from '../../features/spend-unlock/AddSiteForm'
 import { DurationPicker } from '../../features/spend-unlock/DurationPicker'
 import { formatMinutesSeconds } from '../../shared/lib/time'
+import { CoinBadge } from '../../shared/ui/CoinBadge'
 import { Mascot } from '../../shared/ui/Mascot'
 
 interface OpenUnlock {
@@ -31,7 +32,13 @@ export function UnlocksPage({ sites, openUnlocks, balance, onUnlock, onAddSite, 
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 24px 56px', boxSizing: 'border-box' }}>
-      <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 36 }}>{t('unlocks.title')}</h1>
+      <div className="mobile-header" style={{ alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 34 }}>{t('unlocks.title')}</h1>
+        <CoinBadge amount={balance} />
+      </div>
+      <h1 className="desktop-only-title" style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 36 }}>
+        {t('unlocks.title')}
+      </h1>
       <p style={{ margin: '8px 0 0', fontSize: 16, fontWeight: 600, color: 'var(--ink-muted)' }}>{t('unlocks.subtitle')}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>
         <section style={{ flex: '999 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>

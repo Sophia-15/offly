@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 
 export type MascotCharacter = 'sun' | 'moon' | 'cloud' | 'tree' | 'leaf' | 'mushroom' | 'cactus' | 'fire' | 'tangerine'
-export type MascotMood = 'happy' | 'curious' | 'sleepy' | 'proud' | 'neutral'
+export type MascotMood = 'happy' | 'curious' | 'sleepy' | 'proud' | 'neutral' | 'alarm'
 
 const BLOB = 'M60 12C90 12 108 32 108 62C108 92 88 106 60 106C32 106 12 92 12 62C12 32 30 12 60 12Z'
 const CLOUD = 'M34 104C19 104 10 93 14 80C4 74 5 55 20 52C17 35 33 23 48 30C56 15 82 15 88 31C103 28 116 42 109 57C119 65 115 87 100 92C99 101 90 107 81 103Z'
@@ -25,6 +25,23 @@ function face(kids: ReactNode[], eyes: ReactNode[], fx: number, fy: number, s: n
   kids.push(<ellipse key={`${key}-bl`} className="m-blush" cx={X(-28)} cy={Y(8)} rx={7.5 * s} ry={4.5 * s} />)
   kids.push(<ellipse key={`${key}-br`} className="m-blush" cx={X(28)} cy={Y(8)} rx={7.5 * s} ry={4.5 * s} />)
 
+  if (mood === 'alarm') {
+    ;[-16, 16].forEach((ox, i) => {
+      eyes.push(<circle key={`${key}-e${i}`} className="m-white" cx={X(ox)} cy={Y(-8)} r={13.5 * s} />)
+      eyes.push(<circle key={`${key}-p${i}`} className="m-iris" cx={X(ox)} cy={Y(-8)} r={5.5 * s} />)
+      eyes.push(<circle key={`${key}-h${i}`} className="m-hilite" cx={X(ox + 2)} cy={Y(-10)} r={2 * s} />)
+      kids.push(
+        <path
+          key={`${key}-b${i}`}
+          className="m-line"
+          d={`M${X(ox - 8)} ${Y(-26)}Q${X(ox)} ${Y(-31)} ${X(ox + 8)} ${Y(-26)}`}
+          strokeWidth={3 * Math.max(s, 0.8)}
+        />,
+      )
+    })
+    kids.push(<ellipse key={`${key}-m`} className="m-mouth" cx={X(0)} cy={Y(18)} rx={6.5 * s} ry={8 * s} />)
+    return
+  }
   if (mood === 'happy' || mood === 'curious') {
     const dx = mood === 'curious' ? 2.5 : 1
     const dy = mood === 'curious' ? -2.5 : 1
@@ -237,6 +254,16 @@ export function Mascot({ character = 'sun', mood = 'happy', size = 120, label, a
       </g>
     ) : null
 
+  const waves =
+    mood === 'alarm' ? (
+      <g key="wv" className="m-waves">
+        <path className="m-wave m-wave1" d="M8 46Q0 60 8 74" strokeWidth={4} />
+        <path className="m-wave m-wave2" d="M-2 38Q-14 60 -2 82" strokeWidth={4} />
+        <path className="m-wave m-wave1" d="M112 46Q120 60 112 74" strokeWidth={4} />
+        <path className="m-wave m-wave2" d="M122 38Q134 60 122 82" strokeWidth={4} />
+      </g>
+    ) : null
+
   const still = !animate
   const classes = ['mascot', `mascot-c-${ch}`, `mascot-mood-${mood}`, still ? 'mascot-still' : ''].filter(Boolean).join(' ')
 
@@ -245,8 +272,9 @@ export function Mascot({ character = 'sun', mood = 'happy', size = 120, label, a
       <g className="m-mood">
         <g className="m-char">{inner}</g>
       </g>
-      {effects && <g className="m-fx">{fx(ch)}</g>}
+      {effects && mood !== 'alarm' && <g className="m-fx">{fx(ch)}</g>}
       {extra}
+      {waves}
     </svg>
   )
 }

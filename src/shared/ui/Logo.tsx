@@ -58,7 +58,7 @@ interface LogoProps {
 }
 
 export function Logo({ variant = 'wordmark', tone, size = 64, height = 48, label = 'Offly' }: LogoProps) {
-  const ink = tone === 'white' ? '#ffffff' : tone === 'navy' ? '#14213d' : 'var(--ink, #14213d)'
+  const ink = tone === 'white' ? '#ffffff' : tone === 'navy' ? '#14213d' : 'var(--scene-ink, var(--ink, #14213d))'
 
   if (variant === 'icon') {
     return (

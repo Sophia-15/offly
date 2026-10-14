@@ -4,8 +4,9 @@ import { BuddyAvatar } from '../../entities/buddy/BuddyAvatar'
 import { BuddyPicker } from '../../features/pick-buddy/BuddyPicker'
 import { DataControls } from '../../features/manage-data/DataControls'
 import { SettingsPanel } from '../../features/personalize/SettingsPanel'
-import type { Theme } from '../../app/model/types'
+import type { AlarmStyle, Theme } from '../../app/model/types'
 import { Bubble } from '../../shared/ui/Bubble'
+import { CoinBadge } from '../../shared/ui/CoinBadge'
 import { Scene } from '../../shared/ui/Scene'
 import { StatsGrid } from '../../widgets/stats-grid/StatsGrid'
 
@@ -18,6 +19,11 @@ interface MePageProps {
   onChangeTheme: (theme: Theme) => void
   language: string
   onChangeLanguage: (language: string) => void
+  alarmStyle: AlarmStyle
+  onChangeAlarmStyle: (style: AlarmStyle) => void
+  notifyEnabled: boolean
+  onChangeNotifyEnabled: (enabled: boolean) => void
+  balance: number
   totalPoints: number
   longestStreak: number
   totalCompletions: number
@@ -35,6 +41,11 @@ export function MePage({
   onChangeTheme,
   language,
   onChangeLanguage,
+  alarmStyle,
+  onChangeAlarmStyle,
+  notifyEnabled,
+  onChangeNotifyEnabled,
+  balance,
   totalPoints,
   longestStreak,
   totalCompletions,
@@ -47,36 +58,43 @@ export function MePage({
 
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 24px 56px', boxSizing: 'border-box' }}>
-      <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 36 }}>{t('me.title')}</h1>
+      <div className="mobile-header" style={{ alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 34 }}>{t('me.title')}</h1>
+        <CoinBadge amount={balance} />
+      </div>
+      <h1 className="desktop-only-title" style={{ margin: 0, fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 36 }}>
+        {t('me.title')}
+      </h1>
       <p style={{ margin: '8px 0 0', fontSize: 16, fontWeight: 600, color: 'var(--ink-muted)' }}>{t('me.subtitle')}</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, marginTop: 24, alignItems: 'flex-start' }}>
         <section style={{ flex: '1 1 320px', minWidth: 0 }} aria-label="Preview">
           <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', position: 'relative' }}>
-            <Scene height={360} />
-            <div style={{ position: 'absolute', left: 0, right: 0, top: 32, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
-              <Bubble>{t(buddy.lineKey)}</Bubble>
-            </div>
-            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 56, display: 'flex', justifyContent: 'center' }}>
-              <BuddyAvatar buddy={buddy} size={140} />
-            </div>
-            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', justifyContent: 'center' }}>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  height: 34,
-                  padding: '0 16px',
-                  borderRadius: 999,
-                  background: 'var(--surface-raised)',
-                  fontSize: 15,
-                  fontWeight: 800,
-                  color: 'var(--ink)',
-                  boxShadow: 'var(--shadow-edge)',
-                }}
-              >
-                {buddy.name} · {t(buddy.roleKey)}
-              </span>
-            </div>
+            <Scene height={360}>
+              <div style={{ position: 'absolute', left: 0, right: 0, top: 32, display: 'flex', justifyContent: 'center', padding: '0 20px' }}>
+                <Bubble>{t(buddy.lineKey)}</Bubble>
+              </div>
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 56, display: 'flex', justifyContent: 'center' }}>
+                <BuddyAvatar buddy={buddy} size={140} />
+              </div>
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', justifyContent: 'center' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    height: 34,
+                    padding: '0 16px',
+                    borderRadius: 999,
+                    background: 'var(--surface-raised)',
+                    fontSize: 15,
+                    fontWeight: 800,
+                    color: 'var(--ink)',
+                    boxShadow: 'var(--shadow-edge)',
+                  }}
+                >
+                  {buddy.name} · {t(buddy.roleKey)}
+                </span>
+              </div>
+            </Scene>
           </div>
         </section>
         <section style={{ flex: '999 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -103,6 +121,10 @@ export function MePage({
             onChangeTheme={onChangeTheme}
             language={language}
             onChangeLanguage={onChangeLanguage}
+            alarmStyle={alarmStyle}
+            onChangeAlarmStyle={onChangeAlarmStyle}
+            notifyEnabled={notifyEnabled}
+            onChangeNotifyEnabled={onChangeNotifyEnabled}
           />
 
           <DataControls onExport={onExport} onImport={onImport} />

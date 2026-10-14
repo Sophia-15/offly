@@ -35,3 +35,9 @@ export const DEFAULT_TASKS: Task[] = [
   { id: 'outside', name: 'Go outside', nameKey: 'missions.default.outside', emoji: '🌳', points: 5, tone: 'mint', isCustom: false },
   { id: 'workout', name: 'Workout for 30 minutes', nameKey: 'missions.default.workout', emoji: '🏋️', points: 25, tone: 'tangerine', isCustom: false },
 ]
+
+/** Suggestions shown under "Ideas for later" until adopted into the real task list. */
+export const IDEA_TASKS: Task[] = [
+  { id: 'idea-cook-real-meal', name: 'Cook a real meal', nameKey: 'missions.idea_cook_meal', emoji: '🍳', points: 20, tone: 'tangerine', isCustom: false },
+  { id: 'idea-phone-free-evening', name: 'Phone-free evening', nameKey: 'missions.idea_phone_free_evening', emoji: '😴', points: 40, tone: 'blue', isCustom: false },
+]

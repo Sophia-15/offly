@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { MascotCharacter, MascotMood } from '../../shared/ui/Mascot'
 
 export type PomodoroPreset = '25' | '50'
@@ -19,6 +19,8 @@ interface PomodoroState {
   running: boolean
   task: string
   msg: string
+  /** Increments each time a focus round completes; an effect watches this to fire the reward callback. */
+  roundsCompleted: number
 }
 
 function durationFor(phase: PomodoroPhase, preset: PomodoroPreset): number {
@@ -34,10 +36,21 @@ export function usePomodoroTimer(onFocusRoundComplete: () => void) {
     running: false,
     task: '',
     msg: '',
+    roundsCompleted: 0,
   })
   const [celebrating, setCelebrating] = useState(false)
-  const onFocusRoundCompleteRef = useRef(onFocusRoundComplete)
-  onFocusRoundCompleteRef.current = onFocusRoundComplete
+
+  // Fires the reward side-effect outside the setState updater, which React may
+  // invoke more than once per tick — reading/calling anything impure in there
+  // would risk double-crediting coins.
+  useEffect(() => {
+    if (state.roundsCompleted === 0) return
+    onFocusRoundComplete()
+    setCelebrating(true)
+    const id = setTimeout(() => setCelebrating(false), 2200)
+    return () => clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.roundsCompleted])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -48,10 +61,14 @@ export function usePomodoroTimer(onFocusRoundComplete: () => void) {
 
         if (prev.phase === 'focus') {
           const next: PomodoroPhase = prev.round >= 4 ? 'long' : 'short'
-          onFocusRoundCompleteRef.current()
-          setCelebrating(true)
-          setTimeout(() => setCelebrating(false), 2200)
-          return { ...prev, phase: next, left: durationFor(next, prev.preset), running: false, msg: 'round_done' }
+          return {
+            ...prev,
+            phase: next,
+            left: durationFor(next, prev.preset),
+            running: false,
+            msg: 'round_done',
+            roundsCompleted: prev.roundsCompleted + 1,
+          }
         }
 
         const nextRound = prev.phase === 'long' ? 1 : prev.round + 1
@@ -65,7 +82,8 @@ export function usePomodoroTimer(onFocusRoundComplete: () => void) {
   const reset = useCallback(() => setState((p) => ({ ...p, left: durationFor(p.phase, p.preset), running: false, msg: '' })), [])
   const skip = useCallback(() => setState((p) => ({ ...p, left: 1, running: true })), [])
   const setPreset = useCallback(
-    (preset: PomodoroPreset) => setState(() => ({ preset, phase: 'focus', round: 1, left: durationFor('focus', preset), running: false, task: '', msg: '' })),
+    (preset: PomodoroPreset) =>
+      setState((p) => ({ ...p, preset, phase: 'focus', round: 1, left: durationFor('focus', preset), running: false, task: '', msg: '' })),
     [],
   )
   const setTask = useCallback((task: string) => setState((p) => ({ ...p, task })), [])

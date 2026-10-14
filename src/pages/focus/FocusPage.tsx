@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CompletionEntry } from '../../entities/task/model'
 import { FOCUS_ROUND_COINS, usePomodoroTimer } from '../../features/pomodoro/usePomodoroTimer'
@@ -5,6 +6,7 @@ import { Bubble } from '../../shared/ui/Bubble'
 import { Button } from '../../shared/ui/Button'
 import { Celebration } from '../../shared/ui/Celebration'
 import { Coin } from '../../shared/ui/Coin'
+import { CoinBadge } from '../../shared/ui/CoinBadge'
 import { Icon } from '../../shared/ui/Icon'
 import { Mascot } from '../../shared/ui/Mascot'
 import { Scene } from '../../shared/ui/Scene'
@@ -13,6 +15,7 @@ import { Timer } from '../../shared/ui/Timer'
 
 interface FocusPageProps {
   completions: CompletionEntry[]
+  balance: number
   onFocusRoundComplete: () => void
 }
 
@@ -21,9 +24,23 @@ function todayKey(): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
 }
 
-export function FocusPage({ completions, onFocusRoundComplete }: FocusPageProps) {
+export function FocusPage({ completions, balance, onFocusRoundComplete }: FocusPageProps) {
   const { t } = useTranslation()
   const timer = usePomodoroTimer(onFocusRoundComplete)
+  const [taskError, setTaskError] = useState(false)
+  const taskInputRef = useRef<HTMLInputElement>(null)
+  const taskInputRefMobile = useRef<HTMLInputElement>(null)
+
+  function handleToggle() {
+    if (!timer.running && timer.focus && !timer.task.trim()) {
+      setTaskError(true)
+      taskInputRef.current?.focus()
+      taskInputRefMobile.current?.focus()
+      return
+    }
+    setTaskError(false)
+    timer.toggle()
+  }
 
   const todaysRounds = completions.filter((c) => {
     const d = new Date(c.completedAt)
@@ -50,83 +67,186 @@ export function FocusPage({ completions, onFocusRoundComplete }: FocusPageProps)
   const timerLabel = timer.focus ? t('focus.timer_label_focus') : t('focus.timer_label_break')
   const startLabel = timer.running ? t('focus.pause') : timer.left < timer.total ? t('focus.resume') : timer.focus ? t('focus.start_focus') : t('focus.start_break')
 
+  const phasePill = (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        height: 36,
+        padding: '0 16px',
+        borderRadius: 999,
+        background: 'var(--surface-raised)',
+        color: 'var(--blue)',
+        fontSize: 15,
+        fontWeight: 800,
+        boxShadow: 'var(--shadow-edge)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {phaseLabel}
+    </span>
+  )
+
+  const timerButtons = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
+      <button type="button" className="icon-btn" onClick={timer.reset} aria-label={t('focus.restart_aria')}>
+        <Icon name="restart" size={22} />
+      </button>
+      <div style={{ width: 190 }}>
+        <Button variant="primary" block onClick={handleToggle}>
+          <Icon name={timer.running ? 'pause' : 'play'} size={20} />
+          {startLabel}
+        </Button>
+      </div>
+      <button type="button" className="icon-btn" onClick={timer.skip} aria-label={t('focus.skip_aria')}>
+        <Icon name="skip" size={22} />
+      </button>
+    </div>
+  )
+
+  const dotsRow = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+      {dots.map((d, i) => (
+        <span
+          key={i}
+          style={{
+            width: 14,
+            height: 14,
+            borderRadius: 999,
+            background: d.filled ? 'var(--blue)' : d.current ? 'var(--blue-soft)' : 'var(--line)',
+            boxShadow: d.current ? 'inset 0 0 0 2px var(--blue)' : undefined,
+          }}
+        />
+      ))}
+    </div>
+  )
+
+  const msgText = timer.msg === 'round_done' ? t('focus.msg_round_done', { coins: FOCUS_ROUND_COINS }) : timer.msg === 'break_over' ? t('focus.msg_break_over') : null
+
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '16px 24px 56px', boxSizing: 'border-box' }}>
-      <div style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', position: 'relative' }}>
-        <Scene height={420} wide />
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 18,
-            padding: 24,
-          }}
-        >
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              height: 36,
-              padding: '0 16px',
-              borderRadius: 999,
-              background: 'var(--surface-raised)',
-              color: 'var(--blue)',
-              fontSize: 15,
-              fontWeight: 800,
-              boxShadow: 'var(--shadow-edge)',
-            }}
-          >
-            {phaseLabel}
-          </span>
-          <div style={{ borderRadius: 999, boxShadow: 'var(--shadow-float)' }}>
-            <Timer secondsLeft={timer.left} totalSeconds={timer.total} size={220} label={timerLabel} tone={timer.focus ? 'blue' : undefined} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-            <button type="button" className="icon-btn" onClick={timer.reset} aria-label={t('focus.restart_aria')}>
-              <Icon name="restart" size={22} />
-            </button>
-            <div style={{ width: 190 }}>
-              <Button variant="primary" block onClick={timer.toggle}>
-                <Icon name={timer.running ? 'pause' : 'play'} size={20} />
-                {startLabel}
-              </Button>
+      {/* Wide layout: one landscape-format scene with phase/timer/buttons centered on it and the buddy on the right */}
+      <div className="hide-mobile" style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', position: 'relative' }}>
+        <Scene height={420} wide>
+          <div className="focus-overlay-controls">
+            {phasePill}
+            <div style={{ borderRadius: 999, boxShadow: 'var(--shadow-float)' }}>
+              <Timer secondsLeft={timer.left} totalSeconds={timer.total} size={220} label={timerLabel} tone={timer.focus ? 'blue' : undefined} />
             </div>
-            <button type="button" className="icon-btn" onClick={timer.skip} aria-label={t('focus.skip_aria')}>
-              <Icon name="skip" size={22} />
-            </button>
+            {timerButtons}
           </div>
-        </div>
-        <div style={{ position: 'absolute', right: '7%', bottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-          <Bubble>{line}</Bubble>
-          <div style={{ position: 'relative' }}>
-            {timer.celebrating && <Celebration loop={false} spread={0.9} />}
-            <Mascot character={timer.character} mood={timer.mood} size={110} />
+          <div className="focus-overlay-companion">
+            <Bubble>{line}</Bubble>
+            <div style={{ position: 'relative' }}>
+              {timer.celebrating && <Celebration loop={false} spread={0.9} />}
+              <Mascot character={timer.character} mood={timer.mood} size={110} />
+            </div>
           </div>
-        </div>
+        </Scene>
       </div>
 
-      {timer.msg && (
-        <p role="status" style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 15, fontWeight: 800, color: 'var(--mint-deep)' }}>
-          {timer.msg === 'round_done' ? t('focus.msg_round_done', { coins: FOCUS_ROUND_COINS }) : t('focus.msg_break_over')}
+      {/* Phone layout: a narrow (not wide) scene — its own composition, not a crop of the wide one —
+          used only as a backdrop for the title, balance, bubble and buddy; the controls live below it. */}
+      <div className="show-mobile-flex" style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', position: 'relative' }}>
+        <Scene height={300}>
+          <div style={{ display: 'flex', position: 'absolute', left: 20, right: 20, top: 56, alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 26, color: 'var(--scene-ink, var(--ink))' }}>{t('nav.focus')}</span>
+            <CoinBadge amount={balance} />
+          </div>
+          <div style={{ position: 'absolute', left: 20, right: 130, top: 112 }}>
+            <Bubble tail="left">{line}</Bubble>
+          </div>
+          <div style={{ position: 'absolute', right: 22, top: 104 }}>
+            {timer.celebrating && <Celebration loop={false} spread={0.6} />}
+            <Mascot character={timer.character} mood={timer.mood} size={104} />
+          </div>
+        </Scene>
+      </div>
+
+      {/* Phone layout: everything else lives in a sheet below the scene, not overlaid on it */}
+      <div className="focus-sheet show-mobile-flex" style={{ flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+          {phasePill}
+          <Segmented
+            ariaLabel={t('focus.timer_length_label')}
+            value={timer.preset}
+            onChange={(v) => timer.setPreset(v as '25' | '50')}
+            options={[
+              { value: '25', label: t('focus.preset_25') },
+              { value: '50', label: t('focus.preset_50') },
+            ]}
+          />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <Timer secondsLeft={timer.left} totalSeconds={timer.total} size={220} label={timerLabel} tone={timer.focus ? 'blue' : undefined} />
+        </div>
+        {dotsRow}
+        {timerButtons}
+        {msgText && (
+          <p role="status" style={{ margin: 0, textAlign: 'center', fontSize: 14, fontWeight: 800, color: 'var(--mint-deep)' }}>
+            {msgText}
+          </p>
+        )}
+        <div>
+          <label className="field-label" htmlFor="focus-task-mobile">
+            {t('focus.task_label')}
+          </label>
+          <input
+            ref={taskInputRefMobile}
+            id="focus-task-mobile"
+            className="field-input"
+            value={timer.task}
+            onChange={(e) => {
+              timer.setTask(e.target.value)
+              if (e.target.value.trim()) setTaskError(false)
+            }}
+            placeholder={t('focus.task_placeholder')}
+            aria-invalid={taskError}
+            style={taskError ? { outline: '3px solid var(--danger)', outlineOffset: 2 } : undefined}
+          />
+          {taskError && (
+            <p role="alert" style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 700, color: 'var(--danger)' }}>
+              {t('focus.task_required')}
+            </p>
+          )}
+        </div>
+        <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, lineHeight: '20px', fontWeight: 700, color: 'var(--ink-muted)' }}>
+          <Coin size={18} />
+          {t('focus.stats_line', { done, minutes, coins: coinsToday })}
+        </p>
+      </div>
+
+      {/* Wide layout: status message below the stage */}
+      {msgText && (
+        <p className="hide-mobile" role="status" style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 15, fontWeight: 800, color: 'var(--mint-deep)' }}>
+          {msgText}
         </p>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14, marginTop: 20, alignItems: 'start' }}>
+      {/* Wide layout: the three detail cards below the stage */}
+      <div className="hide-mobile focus-desktop-grid">
         <section className="card">
           <label className="field-label" htmlFor="focus-task">
             {t('focus.task_label')}
           </label>
           <input
+            ref={taskInputRef}
             id="focus-task"
             className="field-input"
             value={timer.task}
-            onChange={(e) => timer.setTask(e.target.value)}
+            onChange={(e) => {
+              timer.setTask(e.target.value)
+              if (e.target.value.trim()) setTaskError(false)
+            }}
             placeholder={t('focus.task_placeholder')}
+            aria-invalid={taskError}
+            style={taskError ? { outline: '3px solid var(--danger)', outlineOffset: 2 } : undefined}
           />
+          {taskError && (
+            <p role="alert" style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 700, color: 'var(--danger)' }}>
+              {t('focus.task_required')}
+            </p>
+          )}
         </section>
         <section className="card">
           <span className="field-label">{t('focus.timer_length_label')}</span>
@@ -145,20 +265,7 @@ export function FocusPage({ completions, onFocusRoundComplete }: FocusPageProps)
         </section>
         <section className="card">
           <span className="field-label">{t('focus.today_label')}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {dots.map((d, i) => (
-              <span
-                key={i}
-                style={{
-                  width: 14,
-                  height: 14,
-                  borderRadius: 999,
-                  background: d.filled ? 'var(--blue)' : d.current ? 'var(--blue-soft)' : 'var(--line)',
-                  boxShadow: d.current ? 'inset 0 0 0 2px var(--blue)' : undefined,
-                }}
-              />
-            ))}
-          </div>
+          {dotsRow}
           <p style={{ margin: '10px 0 0', display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, lineHeight: '20px', fontWeight: 700, color: 'var(--ink-muted)' }}>
             <Coin size={18} />
             {t('focus.stats_line', { done, minutes, coins: coinsToday })}
